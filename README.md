@@ -1,1 +1,1 @@
-# zk-face-circuit
+# BYOF Halo2 Circuit
