@@ -1,2 +1,6 @@
 .idea/
-.target/
+target/
+./circuit/target
+./bridge/.github
+./bridge/.env
+./bridge/target
