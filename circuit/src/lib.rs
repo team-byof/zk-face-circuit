@@ -322,7 +322,7 @@ mod test {
             Some("./configs/test1_circuit.config"),
             || {
                 let vec_len = 140 * 8;
-                let hamming_weight = 99;
+                let hamming_weight = 90;
                 let features_bits = gen_random_vec_bits(vec_len);
                 let word_bits = gen_random_vec_bits(vec_len);
                 let error_bits = gen_error_term_bits(hamming_weight, vec_len);
@@ -340,7 +340,7 @@ mod test {
                 println!("error_bytes {}", hex::encode(&error_bytes));
                 let commitment_bytes = bool_slice_to_le_bytes(&commitment_bits);
                 println!("commitment_bytes {}", hex::encode(&commitment_bytes));
-                let message = b"test".to_vec();
+                let message = b"Sigrid".to_vec();
                 let circuit = DefaultFacialRecoverCircuit {
                     features: features_bytes,
                     errors: error_bytes,

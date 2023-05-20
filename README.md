@@ -2,10 +2,10 @@
 ## We're freakin' kicking off our first rendezvous on Halo2 together 🏃🏻🏃🏼🏃🏽🏃🏾🏃
 
 ### Environment
-* Python 3.10 (poetry, maturin) & rustup 1.26.0 (5af9b9484 2023-04-05)
+* Python 3.10 (maturin) & rustup 1.26.0 (5af9b9484 2023-04-05)
+* https://pyo3.rs/v0.18.3/getting_started
 ```shell
-poetry install
-poetry shell
+pip install -r requirements.txt
 cd voice_recovery_python
 maturin develop
 ```
