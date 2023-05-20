@@ -1,6 +1,6 @@
 use crate::{
-    DefaultVoiceRecoverCircuit, DefaultVoiceRecoverConfig, DefaultVoiceRecoverConfigParams,
-    VOICE_RECOVER_CONFIG_ENV,
+    DefaultFacialRecoverCircuit, DefaultFacialRecoverConfig, DefaultFacialRecoverConfigParams,
+    FACIAL_RECOVER_CONFIG_ENV,
 };
 use clap::{Parser, Subcommand};
 use halo2_base::halo2_proofs::circuit::Value;
@@ -67,6 +67,7 @@ pub struct DefaultVoiceRecoverCircuitPublicInput {
 pub fn gen_params(params_path: &str, k: u32) -> Result<(), Error> {
     let rng = thread_rng();
     let params = ParamsKZG::<Bn256>::setup(k, rng);
+    println!("params_path: {} ", params_path);
     let f = File::create(params_path).unwrap();
     let mut writer = BufWriter::new(f);
     params.write(&mut writer).unwrap();
@@ -81,15 +82,15 @@ pub fn gen_keys(
     pk_dir: &str,
     vk_path: &str,
 ) -> Result<(), Error> {
-    set_var(VOICE_RECOVER_CONFIG_ENV, app_circuit_config);
+    set_var(FACIAL_RECOVER_CONFIG_ENV, app_circuit_config);
     set_var("VERIFY_CONFIG", agg_circuit_config);
     let app_params = {
         let f = File::open(Path::new(params_dir).join("app.bin")).unwrap();
         let mut reader = BufReader::new(f);
         ParamsKZG::<Bn256>::read(&mut reader).unwrap()
     };
-    let circuit = DefaultVoiceRecoverCircuit::default();
-    let app_pk = gen_pk::<DefaultVoiceRecoverCircuit>(
+    let circuit = DefaultFacialRecoverCircuit::default();
+    let app_pk = gen_pk::<DefaultFacialRecoverCircuit>(
         &app_params,
         &circuit,
         Some(&Path::new(pk_dir).join("app.pk")),
@@ -116,7 +117,7 @@ pub fn prove(
     proof_path: &str,
     public_input_path: &str,
 ) -> Result<(), Error> {
-    set_var(VOICE_RECOVER_CONFIG_ENV, app_circuit_config);
+    set_var(FACIAL_RECOVER_CONFIG_ENV, app_circuit_config);
     set_var("VERIFY_CONFIG", agg_circuit_config);
     let app_params = {
         let f = File::open(Path::new(params_dir).join("app.bin")).unwrap();
@@ -126,7 +127,7 @@ pub fn prove(
     let app_pk = {
         let f = File::open(Path::new(pk_dir).join("app.pk")).unwrap();
         let mut reader = BufReader::new(f);
-        ProvingKey::<G1Affine>::read::<_, DefaultVoiceRecoverCircuit>(
+        ProvingKey::<G1Affine>::read::<_, DefaultFacialRecoverCircuit>(
             &mut reader,
             SerdeFormat::RawBytesUnchecked,
         )
@@ -140,7 +141,7 @@ pub fn prove(
     let errors = hex::decode(&input.errors[2..]).unwrap();
     let commitment = hex::decode(&input.commitment[2..]).unwrap();
     let message = hex::decode(&input.message[2..]).unwrap();
-    let circuit = DefaultVoiceRecoverCircuit {
+    let circuit = DefaultFacialRecoverCircuit {
         features,
         errors,
         commitment,
@@ -209,7 +210,7 @@ pub fn evm_prove(
     proof_path: &str,
     public_input_path: &str,
 ) -> Result<(), Error> {
-    set_var(VOICE_RECOVER_CONFIG_ENV, app_circuit_config);
+    set_var(FACIAL_RECOVER_CONFIG_ENV, app_circuit_config);
     set_var("VERIFY_CONFIG", agg_circuit_config);
     let app_params = {
         let f = File::open(Path::new(params_dir).join("app.bin")).unwrap();
@@ -219,7 +220,7 @@ pub fn evm_prove(
     let app_pk = {
         let f = File::open(Path::new(pk_dir).join("app.pk")).unwrap();
         let mut reader = BufReader::new(f);
-        ProvingKey::<G1Affine>::read::<_, DefaultVoiceRecoverCircuit>(
+        ProvingKey::<G1Affine>::read::<_, DefaultFacialRecoverCircuit>(
             &mut reader,
             SerdeFormat::RawBytesUnchecked,
         )
@@ -233,7 +234,7 @@ pub fn evm_prove(
     let errors = hex::decode(&input.errors[2..]).unwrap();
     let commitment = hex::decode(&input.commitment[2..]).unwrap();
     let message = hex::decode(&input.message[2..]).unwrap();
-    let circuit = DefaultVoiceRecoverCircuit {
+    let circuit = DefaultFacialRecoverCircuit {
         features,
         errors,
         commitment,
@@ -280,7 +281,7 @@ pub fn verify(
     public_input_path: &str,
     proof_path: &str,
 ) -> Result<(), Error> {
-    set_var(VOICE_RECOVER_CONFIG_ENV, app_circuit_config);
+    set_var(FACIAL_RECOVER_CONFIG_ENV, app_circuit_config);
     set_var("VERIFY_CONFIG", agg_circuit_config);
     let app_params = {
         let f = File::open(Path::new(params_dir).join("app.bin")).unwrap();
@@ -290,7 +291,7 @@ pub fn verify(
     let vk = {
         let f = File::open(vk_path).unwrap();
         let mut reader = BufReader::new(f);
-        VerifyingKey::<G1Affine>::read::<_, DefaultVoiceRecoverCircuit>(
+        VerifyingKey::<G1Affine>::read::<_, DefaultFacialRecoverCircuit>(
             &mut reader,
             SerdeFormat::RawBytesUnchecked,
         )
@@ -317,7 +318,7 @@ pub fn verify(
     instances.push(Fr::from_bytes(&feature_hash).unwrap());
     let mut message_ext = message.to_vec();
     {
-        let config_params = DefaultVoiceRecoverCircuit::read_config_params();
+        let config_params = DefaultFacialRecoverCircuit::read_config_params();
         message_ext.append(&mut vec![0; config_params.max_msg_size - message.len()]);
     }
     let mut packed_message = message_ext
@@ -352,7 +353,7 @@ pub fn gen_evm_verifier(
     vk_path: &str,
     code_path: &str,
 ) -> Result<(), Error> {
-    set_var(VOICE_RECOVER_CONFIG_ENV, app_circuit_config);
+    set_var(FACIAL_RECOVER_CONFIG_ENV, app_circuit_config);
     set_var("VERIFY_CONFIG", agg_circuit_config);
     let app_params = {
         let f = File::open(Path::new(params_dir).join("app.bin")).unwrap();
@@ -362,13 +363,13 @@ pub fn gen_evm_verifier(
     let vk = {
         let f = File::open(vk_path).unwrap();
         let mut reader = BufReader::new(f);
-        VerifyingKey::<G1Affine>::read::<_, DefaultVoiceRecoverCircuit>(
+        VerifyingKey::<G1Affine>::read::<_, DefaultFacialRecoverCircuit>(
             &mut reader,
             SerdeFormat::RawBytesUnchecked,
         )
         .unwrap()
     };
-    let circuit_params = DefaultVoiceRecoverCircuit::read_config_params();
+    let circuit_params = DefaultFacialRecoverCircuit::read_config_params();
     let num_instances = vec![3 + circuit_params.max_msg_size / 16];
     let verifier_yul = {
         let svk = app_params.get_g()[0].into();
@@ -378,7 +379,7 @@ pub fn gen_evm_verifier(
             &vk,
             Config::kzg()
                 .with_num_instance(num_instances.clone())
-                .with_accumulator_indices(DefaultVoiceRecoverCircuit::accumulator_indices()),
+                .with_accumulator_indices(DefaultFacialRecoverCircuit::accumulator_indices()),
         );
 
         let loader = EvmLoader::new::<Fq, Fr>();

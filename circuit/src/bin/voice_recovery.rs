@@ -13,42 +13,42 @@ struct Cli {
 enum Commands {
     /// Generate a setup parameter (not for production).
     GenParams {
-        /// k parameter
+        /// k parameter (cargo run gen-params --k 20)
         #[arg(long)]
         k: u32,
         /// setup parameter path
         /// #[arg(short, long, default_value = "./build/params")]
-        #[arg(short, long, default_value = "./build/params/app.bin")]
+        #[arg(short, long, default_value = "./circuit/params/app.bin")]
         params_path: String,
     },
-    /// Generate a proving key and a verifying key.
+    /// Generate a proving key and a verifying key. (cargo run gen-keys)
     GenKeys {
         /// setup parameter file
-        #[arg(short, long, default_value = "./build/params")]
+        #[arg(short, long, default_value = "./circuit/params")]
         params_dir: String,
         /// circuit configure file
         #[arg(
             short = 'b',
             long,
-            default_value = "./eth_voice_recovery/configs/test1_circuit.config"
+            default_value = "./circuit/configs/test1_circuit.config"
         )]
         app_circuit_config: String,
         #[arg(
             short,
             long,
-            default_value = "./eth_voice_recovery/configs/agg_circuit.config"
+            default_value = "./circuit/configs/agg_circuit.config"
         )]
         agg_circuit_config: String,
         /// proving key file path
-        #[arg(long, default_value = "./build/pks")]
+        #[arg(long, default_value = "./circuit/contracts/pks")]
         pk_dir: String,
         /// verifying key file path
-        #[arg(long, default_value = "./build/app.vk")]
+        #[arg(long, default_value = "./circuit/contracts/app.vk")]
         vk_path: String,
     },
     Prove {
         /// setup parameter file
-        #[arg(short, long, default_value = "./build/params")]
+        #[arg(short, long, default_value = "./circuit/params")]
         params_dir: String,
         /// circuit configure file
         #[arg(
@@ -64,97 +64,97 @@ enum Commands {
         )]
         agg_circuit_config: String,
         /// proving key file path
-        #[arg(long, default_value = "./build/pks")]
+        #[arg(long, default_value = "./circuit/contracts/pks")]
         pk_dir: String,
         /// input file path
-        #[arg(long, default_value = "./build/input.json")]
+        #[arg(long, default_value = "./circuit/contracts/input.json")]
         input_path: String,
         /// proof file path
-        #[arg(long, default_value = "./build/proof.bin")]
+        #[arg(long, default_value = "./circuit/contracts/proof.bin")]
         proof_path: String,
         /// public input file path
-        #[arg(long, default_value = "./build/public_input.json")]
+        #[arg(long, default_value = "./circuit/contracts/public_input.json")]
         public_input_path: String,
     },
     EvmProve {
         /// setup parameter file
-        #[arg(short, long, default_value = "./build/params")]
+        #[arg(short, long, default_value = "./circuit/params")]
         params_dir: String,
         /// circuit configure file
         #[arg(
             short = 'b',
             long,
-            default_value = "./eth_voice_recovery/configs/test1_circuit.config"
+            default_value = "./circuit/configs/test1_circuit.config"
         )]
         app_circuit_config: String,
         #[arg(
             short,
             long,
-            default_value = "./eth_voice_recovery/configs/agg_circuit.config"
+            default_value = "./circuit/configs/agg_circuit.config"
         )]
         agg_circuit_config: String,
         /// proving key file path
-        #[arg(long, default_value = "./build/pks")]
+        #[arg(long, default_value = "./circuit/contracts/pks")]
         pk_dir: String,
         /// input file path
-        #[arg(long, default_value = "./build/input.json")]
+        #[arg(long, default_value = "./circuit/contracts/input.json")]
         input_path: String,
         /// proof file path
-        #[arg(long, default_value = "./build/evm_proof.hex")]
+        #[arg(long, default_value = "./circuit/contracts/evm_proof.hex")]
         proof_path: String,
         /// public input file path
-        #[arg(long, default_value = "./build/evm_public_input.json")]
+        #[arg(long, default_value = "./circuit/contracts/evm_public_input.json")]
         public_input_path: String,
     },
     Verify {
         /// setup parameter file
-        #[arg(short, long, default_value = "./build/params")]
+        #[arg(short, long, default_value = "./circuit/params")]
         params_dir: String,
         /// circuit configure file
         #[arg(
             short = 'b',
             long,
-            default_value = "./eth_voice_recovery/configs/test1_circuit.config"
+            default_value = "./circuit/configs/test1_circuit.config"
         )]
         app_circuit_config: String,
         #[arg(
             short,
             long,
-            default_value = "./eth_voice_recovery/configs/agg_circuit.config"
+            default_value = "./circuit/configs/agg_circuit.config"
         )]
         agg_circuit_config: String,
         /// verifying key file path
-        #[arg(long, default_value = "./build/app.vk")]
+        #[arg(long, default_value = "./circuit/contracts/app.vk")]
         vk_path: String,
         /// public input file path
-        #[arg(long, default_value = "./build/public_input.json")]
+        #[arg(long, default_value = "./circuit/contracts/public_input.json")]
         public_input_path: String,
         /// proof file path
-        #[arg(long, default_value = "./build/proof.bin")]
+        #[arg(long, default_value = "./circuit/contracts/proof.bin")]
         proof_path: String,
     },
-    GenEvmVerifier {
+    GenEvmVerifier { // cargo run gen-evm-verifier
         /// setup parameter file
-        #[arg(short, long, default_value = "./build/params")]
+        #[arg(short, long, default_value = "./circuit/params")]
         params_dir: String,
         /// circuit configure file
         #[arg(
             short = 'b',
             long,
-            default_value = "./eth_voice_recovery/configs/test1_circuit.config"
+            default_value = "./circuit/configs/test1_circuit.config"
         )]
         app_circuit_config: String,
         #[arg(
             short,
             long,
-            default_value = "./eth_voice_recovery/configs/agg_circuit.config"
+            default_value = "./circuit/configs/agg_circuit.config"
         )]
         agg_circuit_config: String,
         /// verifying key file path
-        #[arg(long, default_value = "./build/app.vk")]
+        #[arg(long, default_value = "./circuit/contracts/app.vk")]
         vk_path: String,
         /// verifier code path
-        #[arg(long, default_value = "./build/Verifier.sol")]
+        #[arg(long, default_value = "./circuit/contracts/Verifier.sol")]
         code_path: String,
     },
 }

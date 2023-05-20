@@ -4,3 +4,4 @@ target/
 ./bridge/.github
 ./bridge/.env
 ./bridge/target
+./circuit/params

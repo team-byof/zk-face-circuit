@@ -1,5 +1,5 @@
 use halo2_base::halo2_proofs::halo2curves::{bn256::Fr, group::ff::PrimeField};
-// Orriginal https://github.com/SoraSuegami/halo2-fri-gadget/blob/main/src/hash/poseidon_bn254/chip.rs
+// See /halo2-fri-gadget/blob/main/src/hash/poseidon_bn254/chip.rs
 use halo2_base::halo2_proofs::{arithmetic::FieldExt, plonk::*};
 use halo2_base::{
     gates::{flex_gate::FlexGateConfig, GateInstructions},

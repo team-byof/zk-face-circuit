@@ -31,7 +31,7 @@ use poseidon::Poseidon;
 use snark_verifier_sdk::CircuitExt;
 
 #[derive(Debug, Clone)]
-pub struct VoiceRecoverResult<'a> {
+pub struct FacialRecoverResult<'a> {
     pub assigned_commitment: Vec<AssignedValue<'a, Fr>>,
     pub assigned_commitment_hash: AssignedValue<'a, Fr>,
     pub assigned_feature_hash: AssignedValue<'a, Fr>,
@@ -40,12 +40,12 @@ pub struct VoiceRecoverResult<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub struct VoiceRecoverConfig {
+pub struct FacialRecoverConfig {
     fuzzy_commitment: FuzzyCommitmentConfig,
     max_msg_size: usize,
 }
 
-impl VoiceRecoverConfig {
+impl FacialRecoverConfig {
     pub fn configure(
         meta: &mut ConstraintSystem<Fr>,
         word_size: usize,
@@ -74,7 +74,7 @@ impl VoiceRecoverConfig {
         errors: &[u8],
         commitment: &[u8],
         message: &[u8],
-    ) -> Result<VoiceRecoverResult<'a>, Error> {
+    ) -> Result<FacialRecoverResult<'a>, Error> {
         let fuzzy_result = self
             .fuzzy_commitment
             .recover_and_hash(ctx, poseidon, features, errors, commitment)?;
@@ -93,7 +93,7 @@ impl VoiceRecoverConfig {
             .0[0]
             .clone();
 
-        Ok(VoiceRecoverResult {
+        Ok(FacialRecoverResult {
             assigned_commitment: fuzzy_result.assigned_commitment,
             assigned_feature_hash: fuzzy_result.assigned_feature_hash,
             assigned_message,
@@ -119,9 +119,9 @@ impl VoiceRecoverConfig {
     }
 }
 
-pub const VOICE_RECOVER_CONFIG_ENV: &'static str = "EMAIL_VERIFY_CONFIG";
+pub const FACIAL_RECOVER_CONFIG_ENV: &'static str = "EMAIL_VERIFY_CONFIG";
 #[derive(serde::Serialize, serde::Deserialize)]
-pub struct DefaultVoiceRecoverConfigParams {
+pub struct DefaultFacialRecoverConfigParams {
     pub degree: u32,
     pub num_advice: usize,
     pub num_lookup_advice: usize,
@@ -133,20 +133,20 @@ pub struct DefaultVoiceRecoverConfigParams {
 }
 
 #[derive(Debug, Clone)]
-pub struct DefaultVoiceRecoverConfig {
-    inner: VoiceRecoverConfig,
+pub struct DefaultFacialRecoverConfig {
+    inner: FacialRecoverConfig,
     instance: Column<Instance>, // 1. commitment hash 2. feature hash 3. message hash 4. message
 }
 
 #[derive(Debug, Clone)]
-pub struct DefaultVoiceRecoverCircuit {
+pub struct DefaultFacialRecoverCircuit {
     pub features: Vec<u8>,
     pub errors: Vec<u8>,
     pub commitment: Vec<u8>,
     pub message: Vec<u8>,
 }
 
-impl Default for DefaultVoiceRecoverCircuit {
+impl Default for DefaultFacialRecoverCircuit {
     fn default() -> Self {
         let params = Self::read_config_params();
         let word_size = params.word_size;
@@ -159,8 +159,8 @@ impl Default for DefaultVoiceRecoverCircuit {
     }
 }
 
-impl Circuit<Fr> for DefaultVoiceRecoverCircuit {
-    type Config = DefaultVoiceRecoverConfig;
+impl Circuit<Fr> for DefaultFacialRecoverCircuit {
+    type Config = DefaultFacialRecoverConfig;
     type FloorPlanner = SimpleFloorPlanner;
 
     fn without_witnesses(&self) -> Self {
@@ -179,7 +179,7 @@ impl Circuit<Fr> for DefaultVoiceRecoverCircuit {
             0,
             params.degree as usize,
         );
-        let inner = VoiceRecoverConfig::configure(
+        let inner = FacialRecoverConfig::configure(
             meta,
             params.word_size,
             params.max_msg_size,
@@ -200,7 +200,7 @@ impl Circuit<Fr> for DefaultVoiceRecoverCircuit {
         let mut first_pass = SKIP_FIRST_PASS;
         let mut instance_cell = vec![];
         layouter.assign_region(
-            || "voice recover",
+            || "facial recover",
             |region| {
                 if first_pass {
                     first_pass = false;
@@ -236,15 +236,7 @@ impl Circuit<Fr> for DefaultVoiceRecoverCircuit {
                 debug_assert_eq!(16 * packed_msg.len(), result.assigned_message.len());
                 config.inner.finalize(ctx);
                 instance_cell.push(result.assigned_commitment_hash.cell());
-                // result
-                //     .assigned_feature_hash
-                //     .value()
-                //     .map(|v| println!("assigned feature hash {:?}", v));
                 instance_cell.push(result.assigned_feature_hash.cell());
-                // result
-                //     .assigned_message_hash
-                //     .value()
-                //     .map(|v| println!("assigned message hash {:?}", v));
                 instance_cell.push(result.assigned_message_hash.cell());
                 instance_cell.append(&mut packed_msg.into_iter().map(|v| v.cell()).collect_vec());
 
@@ -258,7 +250,7 @@ impl Circuit<Fr> for DefaultVoiceRecoverCircuit {
     }
 }
 
-impl CircuitExt<Fr> for DefaultVoiceRecoverCircuit {
+impl CircuitExt<Fr> for DefaultFacialRecoverCircuit {
     fn num_instance(&self) -> Vec<usize> {
         let params = Self::read_config_params();
         vec![3 + params.max_msg_size / 16]
@@ -304,11 +296,11 @@ impl CircuitExt<Fr> for DefaultVoiceRecoverCircuit {
     }
 }
 
-impl DefaultVoiceRecoverCircuit {
-    pub fn read_config_params() -> DefaultVoiceRecoverConfigParams {
-        let path = std::env::var(VOICE_RECOVER_CONFIG_ENV)
-            .expect("You should set the configure file path to VOICE_RECOVER_CONFIG_ENV.");
-        let params: DefaultVoiceRecoverConfigParams = serde_json::from_reader(
+impl DefaultFacialRecoverCircuit {
+    pub fn read_config_params() -> DefaultFacialRecoverConfigParams {
+        let path = std::env::var(FACIAL_RECOVER_CONFIG_ENV)
+            .expect("You should set the configure file path to FACIAL_RECOVER_CONFIG_ENV.");
+        let params: DefaultFacialRecoverConfigParams = serde_json::from_reader(
             File::open(path.as_str()).expect(&format!("{} does not exist.", path)),
         )
         .expect("File is found but invalid.");
@@ -326,7 +318,7 @@ mod test {
     #[test]
     fn test_correct1() {
         temp_env::with_var(
-            VOICE_RECOVER_CONFIG_ENV,
+            FACIAL_RECOVER_CONFIG_ENV,
             Some("./configs/test1_circuit.config"),
             || {
                 let vec_len = 140 * 8;
@@ -349,7 +341,7 @@ mod test {
                 let commitment_bytes = bool_slice_to_le_bytes(&commitment_bits);
                 println!("commitment_bytes {}", hex::encode(&commitment_bytes));
                 let message = b"test".to_vec();
-                let circuit = DefaultVoiceRecoverCircuit {
+                let circuit = DefaultFacialRecoverCircuit {
                     features: features_bytes,
                     errors: error_bytes,
                     commitment: commitment_bytes,
