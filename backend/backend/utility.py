@@ -6,7 +6,8 @@ import random
 import string
 import json
 
-from bridge import poseidon_hash, evm_prove
+from bridge import poseidon_hash, evm_prove, evm_verify
+from torch import err
 
 from convert import bytearray_to_hex, hex_to_bytearray
 
@@ -220,7 +221,6 @@ def recover(feat_vec, c, h_w, m):
     return e, h_m_w, recovered_h_W
 
 
-
 def generate_proof(feat_vec, err, feat_xor_ecc, message):
     print('generating proof')
     session_id = generate_filename(20)
@@ -278,6 +278,25 @@ def generate_proof(feat_vec, err, feat_xor_ecc, message):
         proof_bin = hex_to_bytearray(f.read())
         return True, proof_bin, session_id
     # shutil.rmtree(session_dir)
+
+
+def verify_proof(proof, commitment, message):
+    print('verifying proof')
+
+    try:
+        evm_verify(
+            params_dir="./circuit/params",
+            app_circuit_config="./circuit/configs/test1_circuit.config",
+            agg_circuit_config="./circuit/configs/agg_circuit.config",
+            vk_path="./circuit/contracts/app.vk",
+            # change the belows
+            public_input_path="./circuit/contracts/public.json",
+            proof_path="./circuit/contracts/proof.hex",
+        )
+    except:
+        print("evm_verify failed")
+        return False
+    return True
 
 
 # 256비트 길이의 특징 벡터를 생성합니다.

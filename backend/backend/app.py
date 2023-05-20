@@ -3,7 +3,7 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from backend.backend.account_abstraction import EntryPointContract, ALLTHATNODE_URL, CONTRACT_ABI, ENTRY_POINT_ADDRESS, \
+from account_abstraction import EntryPointContract, ALLTHATNODE_URL, CONTRACT_ABI, ENTRY_POINT_ADDRESS, \
     PRIVATE_KEY
 from ml_model import FaceComparison
 from werkzeug.utils import secure_filename

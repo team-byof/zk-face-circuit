@@ -356,7 +356,7 @@ pub fn evm_prove(
     Ok(())
 }
 
-pub fn verify(
+pub fn evm_verify(
     params_dir: &str,
     app_circuit_config: &str,
     agg_circuit_config: &str,

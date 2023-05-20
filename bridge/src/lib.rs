@@ -54,11 +54,33 @@ pub fn evm_prove(
     Ok(())
 }
 
+#[pyfunction]
+pub fn evm_verify(
+    params_dir: String,
+    app_circuit_config: String,
+    agg_circuit_config: String,
+    vk_path: String,
+    public_input_path: String,
+    proof_path: String,
+) -> PyResult<()> {
+    circuit::helper::evm_verify(
+        &params_dir,
+        &app_circuit_config,
+        &agg_circuit_config,
+        &vk_path,
+        &public_input_path,
+        &proof_path,
+    )
+    .unwrap();
+    Ok(())
+}
+
 #[pymodule]
 #[pyo3(name = "bridge")]
 fn bridge(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     pyo3_log::init();
     m.add_function(wrap_pyfunction!(poseidon_hash, m)?)?;
     m.add_function(wrap_pyfunction!(evm_prove, m)?)?;
+    m.add_function(wrap_pyfunction!(evm_verify, m)?)?;
     Ok(())
 }
