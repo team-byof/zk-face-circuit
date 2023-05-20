@@ -8,7 +8,7 @@ use halo2_base::halo2_proofs::dev::MockProver;
 use halo2_base::halo2_proofs::halo2curves::bn256::{Bn256, Fq, Fr, G1Affine};
 use halo2_base::halo2_proofs::halo2curves::FieldExt;
 use halo2_base::halo2_proofs::plonk::{
-    create_proof, keygen_pk, keygen_vk, verify_proof, Error, ProvingKey, VerifyingKey,
+    create_proof, keygen_pk, keygen_vk, verify_proof, ProvingKey, VerifyingKey,
 };
 use halo2_base::halo2_proofs::poly::commitment::{Params, ParamsProver};
 use halo2_base::halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG};
@@ -40,7 +40,7 @@ use snark_verifier_sdk::halo2::gen_snark_gwc;
 use snark_verifier_sdk::{gen_pk, CircuitExt, LIMBS};
 use std::env::set_var;
 use std::fs::{self, File};
-use std::io::BufRead;
+use std::io::{BufRead, ErrorKind, Error};
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
@@ -84,12 +84,22 @@ pub fn gen_keys(
 ) -> Result<(), Error> {
     set_var(FACIAL_RECOVER_CONFIG_ENV, app_circuit_config);
     set_var("VERIFY_CONFIG", agg_circuit_config);
+    println!("agg_circuit_config: {} ", agg_circuit_config);
     let app_params = {
-        let f = File::open(Path::new(params_dir).join("app.bin")).unwrap();
-        let mut reader = BufReader::new(f);
-        ParamsKZG::<Bn256>::read(&mut reader).unwrap()
+        let f = File::open(Path::new(params_dir).join("app.bin"));
+        match f {
+            Ok(file) => {
+                let mut reader = BufReader::new(file);
+                match ParamsKZG::<Bn256>::read(&mut reader) {
+                    Ok(params) => params,
+                    Err(e) => return Err(Error::new(ErrorKind::InvalidData, format!("Could not read parameters: {}", e))),
+                }
+            }
+            Err(e) => return Err(Error::new(ErrorKind::InvalidData, format!("Could not open parameters file: {}", e))),
+        }
     };
     let circuit = DefaultFacialRecoverCircuit::default();
+    println!("Circuit loaded");
     let app_pk = gen_pk::<DefaultFacialRecoverCircuit>(
         &app_params,
         &circuit,

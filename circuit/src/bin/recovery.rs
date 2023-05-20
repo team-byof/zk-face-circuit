@@ -54,13 +54,13 @@ enum Commands {
         #[arg(
             short = 'b',
             long,
-            default_value = "./eth_voice_recovery/configs/test1_circuit.config"
+            default_value = "./circuit/configs/test1_circuit.config"
         )]
         app_circuit_config: String,
         #[arg(
             short,
             long,
-            default_value = "./eth_voice_recovery/configs/agg_circuit.config"
+            default_value = "./circuit/configs/agg_circuit.config"
         )]
         agg_circuit_config: String,
         /// proving key file path
