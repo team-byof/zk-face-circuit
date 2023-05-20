@@ -32,28 +32,28 @@ class FaceComparison:
         cos_sim = np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
         return 1 - cos_sim
 
-
-# Usage:
-face_comparator = FaceComparison()
-
-img1_path = "./dataset/img1.jpg"
-img1_path_2 = "./dataset/img1.jpg"
-img2_path = "./dataset/img2.jpg"
-
-# Verify faces
-result = face_comparator.verify_faces(img1_path, img1_path_2)
-print(result)
-
-# Get face embeddings
-embedding_img1 = face_comparator.represent_face(img1_path)
-embedding_img2 = face_comparator.represent_face(img1_path_2)
-
-print(embedding_img1)
-print(embedding_img2)
-
-# Calculate distance and cosine similarity between embeddings
-dist = face_comparator.calculate_distance(embedding_img1, embedding_img2)
-cos_sim = face_comparator.calculate_cosine_similarity(embedding_img1, embedding_img2)
-
-print(dist)
-print(cos_sim)
+#
+# # Usage:
+# face_comparator = FaceComparison()
+#
+# img1_path = "./dataset/img1.jpg"
+# img1_path_2 = "./dataset/img1.jpg"
+# img2_path = "./dataset/img2.jpg"
+#
+# # Verify faces
+# result = face_comparator.verify_faces(img1_path, img1_path_2)
+# print(result)
+#
+# # Get face embeddings
+# embedding_img1 = face_comparator.represent_face(img1_path)
+# embedding_img2 = face_comparator.represent_face(img1_path_2)
+#
+# print(embedding_img1)
+# print(embedding_img2)
+#
+# # Calculate distance and cosine similarity between embeddings
+# dist = face_comparator.calculate_distance(embedding_img1, embedding_img2)
+# cos_sim = face_comparator.calculate_cosine_similarity(embedding_img1, embedding_img2)
+#
+# print(dist)
+# print(cos_sim)
