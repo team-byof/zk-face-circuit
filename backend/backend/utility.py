@@ -111,7 +111,7 @@ def fuzzy_commitment(feat_vec):
     ecc = bch.encode(s)
     packet = s + ecc
     print("packet is ", bytearray_to_hex(packet))
-    print(len(packet))
+    print("len of packet is ", len(packet))
 
     feat_vec = padding(feat_vec, len(packet))
 

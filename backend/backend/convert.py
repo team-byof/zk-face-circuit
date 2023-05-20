@@ -15,7 +15,7 @@ def feat_bytearray_from_image_path(img_path):
     embedding = DeepFace.represent(img_path)
 
     # Ensure embedding is an array of integers (DeepFace.represent returns a list of floats)
-    int_embedding = [int(e) for e in embedding]
+    int_embedding = [int(e * 1000) for e in embedding]
 
     # Convert to a byte array
     feat_bytearray = bytearray(np.packbits(int_embedding))

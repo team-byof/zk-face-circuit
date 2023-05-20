@@ -36,18 +36,19 @@ class FaceComparison:
         cos_sim = np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
         return 1 - cos_sim
 
+    # curl -X POST -H "Content-Type: application/json" -d '{"img_path":"/Users/sigridjin.eth/Documents/github/zk-face-circuit/backend/backend/dataset/img2.jpg"}' http://127.0.0.1:5000/feat_vec
     @staticmethod
     def feat_vec(img_path):
         feat = feat_bytearray_from_image_path(img_path)
-        print(bytearray_to_hex(feat))
+        print('bytearray_to_hex(feat)', bytearray_to_hex(feat))
 
         feat_xor_ecc, hash_ecc = fuzzy_commitment(feat)
         hash_feat_xor_ecc = my_hash(feat_xor_ecc)
 
         return {
-            "feat" : bytearray_to_hex(feat),
-            "hash_ecc" : bytearray_to_hex(hash_ecc),
-            "hash_feat_xor_ecc" : bytearray_to_hex(hash_feat_xor_ecc),
+            "feat": bytearray_to_hex(feat),
+            "hash_ecc": bytearray_to_hex(hash_ecc),
+            "hash_feat_xor_ecc": bytearray_to_hex(hash_feat_xor_ecc),
             "feat_xor_ecc": bytearray_to_hex(feat_xor_ecc),
         }
 
@@ -65,7 +66,7 @@ class FaceComparison:
 
         return {
             "new_feat": bytearray_to_hex(new_feat),
-            "recovered_hash_ecc" : bytearray_to_hex(recovered_hash_ecc),
+            "recovered_hash_ecc": bytearray_to_hex(recovered_hash_ecc),
             "hash_ecc_msg": bytearray_to_hex(hash_ecc_msg),
             "code_error": bytearray_to_hex(code_error),
             "proof": bytearray_to_hex(proof_bin),
