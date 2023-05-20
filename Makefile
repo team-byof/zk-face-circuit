@@ -4,4 +4,5 @@ run-server:
 	@echo "Kill the potential PID processes that use 5000 port"
 	@kill -9 $$(lsof -t -i:5000)
 	@echo "Running server..."
-	@python ./backend/backend/app.py
+#	@python ./backend/backend/app.py
+	@nohup python ./backend/backend/app.py > /dev/null 2>&1 &
