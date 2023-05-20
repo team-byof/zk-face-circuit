@@ -6,7 +6,7 @@
 * https://pyo3.rs/v0.18.3/getting_started
 ```shell
 pip install -r requirements.txt
-cd voice_recovery_python
+cd bridge
 maturin develop
 ```
 * Export the Halo2 circuit to Solidity Verifier
