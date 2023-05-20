@@ -7,6 +7,7 @@ def bytearray_to_hex(ba):
 
 
 def hex_to_bytearray(hex_string):
+    print('hex_string: ', hex_string)
     return bytearray.fromhex(hex_string[2:])
 
 

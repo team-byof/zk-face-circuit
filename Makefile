@@ -1,4 +1,6 @@
 run-server:
+	@echo "Set RUST_BACKTRACE=1"
+	@export RUST_BACKTRACE=1
 	@echo "Kill the potential PID processes that use 5000 port"
 	@kill -9 $$(lsof -t -i:5000)
 	@echo "Running server..."

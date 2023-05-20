@@ -12,3 +12,4 @@ tensorflow==2.13.0rc0
 deepface==0.0.69
 maturin==0.14.17
 autopep8==2.0.2
+Pillow==9.5.0

@@ -54,12 +54,16 @@ class FaceComparison:
 
     @staticmethod
     def gen_proof(img_path, json_data):
+        # if json_data["msg"][0:2] != "0x":
+        #     msg = hex(int(json_data["msg"]))
+        #     json_data["msg"] = msg
         new_feat = feat_bytearray_from_image_path(img_path)
         print(bytearray_to_hex(new_feat))
 
         hash_ecc = hex_to_bytearray(json_data["hash_ecc"])
         feat_xor_ecc = hex_to_bytearray(json_data["feat_xor_ecc"])
-        msg = hex_to_bytearray(json_data["msg"])
+        # msg = hex_to_bytearray(json_data["msg"])
+        msg = hex_to_bytearray("0x9a8f43")
 
         code_error, hash_ecc_msg, recovered_hash_ecc = recover(new_feat, feat_xor_ecc, hash_ecc, msg)
         proof_succeed, proof_bin, session_id = generate_proof(new_feat, code_error, feat_xor_ecc, msg)
