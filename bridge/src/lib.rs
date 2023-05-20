@@ -55,7 +55,8 @@ pub fn evm_prove(
 }
 
 #[pymodule]
-fn voice_recovery_python(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+#[pyo3(name = "bridge")]
+fn bridge(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     pyo3_log::init();
     m.add_function(wrap_pyfunction!(poseidon_hash, m)?)?;
     m.add_function(wrap_pyfunction!(evm_prove, m)?)?;

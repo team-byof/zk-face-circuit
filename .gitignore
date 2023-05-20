@@ -5,3 +5,4 @@ target/
 ./bridge/.env
 ./bridge/target
 ./circuit/params
+__pycache__/

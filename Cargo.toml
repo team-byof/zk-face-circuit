@@ -1,5 +1,4 @@
 [workspace]
-
 members = ["circuit", "bridge"]
 
 [patch."https://github.com/axiom-crypto/halo2-lib.git"]

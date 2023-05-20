@@ -6,41 +6,17 @@ app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 face_comparator = FaceComparison()
 
+
 @app.route('/api/data')
 def get_data():
-    data = {'name': 'John', 'age': 30}
+    data = {'name': 'dannaward', 'age': 23}
     return jsonify(data)
 
 
-@app.route('/api/upload-wav', methods=['POST'])
+@app.route('/api/upload-image', methods=['POST'])
 def upload():
     return {'message': 'File uploaded successfully'}
 
-
-@app.route('/api/feature-vector', methods=['POST'])
-def feat_vec():
-    mock_response = {
-        "feat": "mock_feat",
-        "hash_ecc": "mock_hash_ecc",
-        "hash_feat_xor_ecc": "mock_hash_feat_xor_ecc",
-        "feat_xor_ecc": "mock_feat_xor_ecc",
-    }
-
-    return jsonify(mock_response)
-
-
-@app.route('/api/gen-proof', methods=['POST'])
-def gen_proof():
-    mock_response = {
-        "new_feat": "mock_new_feat",
-        "recovered_hash_ecc": "mock_recovered_hash_ecc",
-        "hash_ecc_msg": "mock_hash_ecc_msg",
-        "code_error": "mock_code_error",
-        "proof": "mock_proof",
-        "session_id": "mock_session_id",
-    }
-
-    return jsonify(mock_response)
 
 # curl -X POST http://127.0.0.1:5000/api/compare-faces -H "Content-Type: application/json" -d '{"img1_path": "/Users/sigridjin.eth/Documents/github/zk-face-circuit/backend/backend/dataset/img1.jpg", "img2_path": "/Users/sigridjin.eth/Documents/github/zk-face-circuit/backend/backend/dataset/img1.jpg"}'
 # {"cosine_similarity":2.220446049250313e-16,"distance":0.0,"verification_result":{"distance":2.220446049250313e-16,"max_threshold_to_verify":0.4,"model":"VGG-Face","similarity_metric":"cosine","verified":true}}
@@ -72,6 +48,21 @@ def compare_faces():
         }
 
         return jsonify(response)
+
+
+@app.route('/feat_vec', methods=['POST'])
+def feat_vec():
+    img_path = request.json.get('img_path')
+    result = FaceComparison.feat_vec(img_path)
+    return jsonify(result)
+
+
+@app.route('/gen_proof', methods=['POST'])
+def gen_proof():
+    img_path = request.json.get('img_path')
+    json_data = request.json.get('json_data')
+    result = FaceComparison.gen_proof(img_path, json_data)
+    return jsonify(result)
 
 
 if __name__ == '__main__':

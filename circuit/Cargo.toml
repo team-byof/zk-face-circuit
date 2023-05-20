@@ -41,7 +41,7 @@ regex = "1"
 [dev-dependencies]
 temp-env = "0.3.3"
 
-[[bin]]
-name = "voice_recovery"
-test = false
-bench = false
+#[[bin]]
+#name = "voice_recovery"
+#test = false
+#bench = false
