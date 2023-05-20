@@ -53,28 +53,32 @@ class FaceComparison:
         }
 
     @staticmethod
-    def gen_proof(img_path, json_data):
+    def gen_proof(json_data):
+        # img_path,
         # if json_data["msg"][0:2] != "0x":
         #     msg = hex(int(json_data["msg"]))
         #     json_data["msg"] = msg
-        new_feat = feat_bytearray_from_image_path(img_path)
-        print(bytearray_to_hex(new_feat))
+        # new_feat = feat_bytearray_from_image_path(img_path)
+        # print(bytearray_to_hex(new_feat))
 
         hash_ecc = hex_to_bytearray(json_data["hash_ecc"])
         feat_xor_ecc = hex_to_bytearray(json_data["feat_xor_ecc"])
         # msg = hex_to_bytearray(json_data["msg"])
-        msg = hex_to_bytearray("0x9a8f43")
-
-        code_error, hash_ecc_msg, recovered_hash_ecc = recover(new_feat, feat_xor_ecc, hash_ecc, msg)
-        proof_succeed, proof_bin, session_id = generate_proof(new_feat, code_error, feat_xor_ecc, msg)
+        msg = "0x9a8f43"
+        feat = json_data["feat"]
+        print('feat', feat)
+        code_error, hash_ecc_msg, recovered_hash_ecc = recover(feat, feat_xor_ecc, hash_ecc, msg)
+        proof_succeed, proof_bin, session_id = generate_proof(feat, code_error, feat_xor_ecc, msg)
 
         return {
-            "new_feat": bytearray_to_hex(new_feat),
+            "new_feat": bytearray_to_hex(feat),
             "recovered_hash_ecc": bytearray_to_hex(recovered_hash_ecc),
             "hash_ecc_msg": bytearray_to_hex(hash_ecc_msg),
             "code_error": bytearray_to_hex(code_error),
             "proof": bytearray_to_hex(proof_bin),
             "session_id": session_id,
+            "proof_succeed": proof_succeed,
+            "proof_bin": bytearray_to_hex(proof_bin),
         }
 
 #

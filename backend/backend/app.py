@@ -83,13 +83,13 @@ def gen_proof():
         "msg": hex,
     }
     """
-    if 'image' not in request.files:
-        return jsonify({"error": "No image file provided"}), 400
+    # if 'image' not in request.files:
+    #     return jsonify({"error": "No image file provided"}), 400
 
-    image = request.files['image']
-    filename = secure_filename(image.filename)
+    # image = request.files['image']
+    # filename = secure_filename(image.filename)
     # Save the uploaded image temporarily
-    image.save(filename)
+    # image.save(filename)
 
     # Extract the required parameters from the request form data
     feat = request.form.get('feat')
@@ -98,7 +98,7 @@ def gen_proof():
     hash_feat_xor_ecc = request.form.get('hash_feat_xor_ecc')
 
     if not (feat and feat_xor_ecc and hash_ecc and hash_feat_xor_ecc):
-        os.remove(filename)
+        # os.remove(filename)
         return jsonify({"error": "Missing required parameters"}), 400
 
     json_data = {
@@ -109,14 +109,15 @@ def gen_proof():
     }
 
     try:
-        result = FaceComparison.gen_proof(filename, json_data)
+        # result = FaceComparison.gen_proof(filename, json_data)
+        result = FaceComparison.gen_proof(json_data)
     except ValueError as e:
         # Remove the temporary image file
-        os.remove(filename)
+        # os.remove(filename)
         return jsonify({"error": str(e)}), 400
 
     # Remove the temporary image file
-    os.remove(filename)
+    # os.remove(filename)
 
     return jsonify(result)
 

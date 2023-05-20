@@ -6,3 +6,8 @@ run-server:
 	@echo "Running server..."
 #	@python ./backend/backend/app.py
 	@nohup python ./backend/backend/app.py > /dev/null 2>&1 &
+
+debug:
+	@cargo build
+	@cd ./bridge/ && maturin develop
+	@python ./backend/backend/app.py

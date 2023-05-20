@@ -7,13 +7,11 @@ use halo2_base::halo2_proofs::circuit::Value;
 use halo2_base::halo2_proofs::dev::MockProver;
 use halo2_base::halo2_proofs::halo2curves::bn256::{Bn256, Fq, Fr, G1Affine};
 use halo2_base::halo2_proofs::halo2curves::FieldExt;
-use halo2_base::halo2_proofs::plonk::{
-    create_proof, keygen_pk, keygen_vk, verify_proof, ProvingKey, VerifyingKey,
-};
-use halo2_base::halo2_proofs::poly::commitment::{Params, ParamsProver};
+use halo2_base::halo2_proofs::plonk::{create_proof, keygen_pk, keygen_vk, verify_proof, ProvingKey, VerifyingKey, Circuit};
+use halo2_base::halo2_proofs::poly::commitment::{Params, ParamsProver, Prover, Verifier};
 use halo2_base::halo2_proofs::poly::kzg::commitment::{KZGCommitmentScheme, ParamsKZG};
 use halo2_base::halo2_proofs::poly::kzg::multiopen::{ProverGWC, VerifierGWC};
-use halo2_base::halo2_proofs::poly::kzg::strategy::SingleStrategy;
+use halo2_base::halo2_proofs::poly::kzg::strategy::{AccumulatorStrategy, GuardKZG, SingleStrategy};
 use halo2_base::halo2_proofs::poly::VerificationStrategy;
 use halo2_base::halo2_proofs::transcript::{
     Blake2bRead, Blake2bWrite, Challenge255, TranscriptReadBuffer, TranscriptWrite,
@@ -25,7 +23,7 @@ use itertools::Itertools;
 use num_bigint::BigUint;
 use num_traits::Pow;
 use rand::rngs::OsRng;
-use rand::thread_rng;
+use rand::{Rng, thread_rng};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -45,6 +43,7 @@ use std::io::{BufReader, BufWriter, Read, Write};
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
+use halo2_base::halo2_proofs::poly::kzg::msm::DualMSM;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct DefaultVoiceRecoverCircuitInput {
@@ -62,6 +61,76 @@ pub struct DefaultVoiceRecoverCircuitPublicInput {
     feature_hash: String,
     message_hash: String,
     // acc: String,
+}
+
+pub fn gen_evm_proof_gwc2<'params, C: Circuit<Fr>>(
+    params: &'params ParamsKZG<Bn256>,
+    pk: &'params ProvingKey<G1Affine>,
+    circuit: C,
+    instances: Vec<Vec<Fr>>,
+    rng: &mut (impl Rng + Send),
+) -> Vec<u8> {
+    gen_evm_proof::<C, ProverGWC<_>, VerifierGWC<_>>(params, pk, circuit, instances, rng)
+}
+
+pub fn gen_evm_proof<'params, C, P, V>(
+    params: &'params ParamsKZG<Bn256>,
+    pk: &'params ProvingKey<G1Affine>,
+    circuit: C,
+    instances: Vec<Vec<Fr>>,
+    rng: &mut (impl Rng + Send),
+) -> Vec<u8>
+    where
+        C: Circuit<Fr>,
+        P: Prover<'params, KZGCommitmentScheme<Bn256>>,
+        V: Verifier<
+            'params,
+            KZGCommitmentScheme<Bn256>,
+            Guard = GuardKZG<'params, Bn256>,
+            MSMAccumulator = DualMSM<'params, Bn256>,
+        >,
+{
+    #[cfg(debug_assertions)]
+    {
+        MockProver::run(params.k(), &circuit, instances.clone()).unwrap().assert_satisfied();
+    }
+
+    let instances = instances.iter().map(|instances| instances.as_slice()).collect_vec();
+
+    #[cfg(feature = "display")]
+        let proof_time = start_timer!(|| "Create EVM proof");
+    let proof = {
+        let mut transcript = TranscriptWriterBuffer::<_, G1Affine, _>::init(Vec::new());
+        create_proof::<KZGCommitmentScheme<Bn256>, P, _, _, EvmTranscript<_, _, _, _>, _>(
+            params,
+            pk,
+            &[circuit],
+            &[instances.as_slice()],
+            rng,
+            &mut transcript,
+        )
+            .unwrap();
+        transcript.finalize()
+    };
+    #[cfg(feature = "display")]
+    end_timer!(proof_time);
+
+    let accept = {
+        let mut transcript = TranscriptReadBuffer::<_, G1Affine, _>::init(proof.as_slice());
+        VerificationStrategy::<_, V>::finalize(
+            verify_proof::<_, V, _, EvmTranscript<_, _, _, _>, _>(
+                params.verifier_params(),
+                pk.get_vk(),
+                AccumulatorStrategy::new(params.verifier_params()),
+                &[instances.as_slice()],
+                &mut transcript,
+            )
+                .unwrap(),
+        )
+    };
+    // assert!(accept);
+
+    proof
 }
 
 pub fn gen_params(params_path: &str, k: u32) -> Result<(), Error> {
@@ -251,13 +320,17 @@ pub fn evm_prove(
         message,
     };
     let instances = circuit.instances();
-    let proof = gen_evm_proof_gwc(&app_params, &app_pk, circuit, instances.clone(), &mut OsRng);
+    let proof = gen_evm_proof_gwc2(&app_params, &app_pk, circuit, instances.clone(), &mut OsRng);
     {
         let proof_hex = hex::encode(&proof);
+        println!("proof: {}", proof_hex);
         let mut file = File::create(proof_path)?;
+        println!("proof path: {}", proof_path);
         write!(file, "0x{}", proof_hex).unwrap();
+        println!("write proof done");
         file.flush().unwrap();
     };
+    println!("proof done");
     let public_input = DefaultVoiceRecoverCircuitPublicInput {
         commitment: input.commitment,
         commitment_hash: format!(

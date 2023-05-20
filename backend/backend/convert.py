@@ -2,8 +2,31 @@ import numpy as np
 from deepface import DeepFace
 
 
+# def bytearray_to_hex(ba):
+#     print('ba: ', ba, type(ba))
+#     # Extract the string part from the tuple
+#     if isinstance(ba, tuple) and isinstance(ba[0], str):
+#         ba = bytearray.fromhex(ba[0][2:])  # exclude the
+#         print("isInstance tuple", ba, type(ba))
+#     elif isinstance(ba, str):
+#         ba = bytearray.fromhex(ba)
+#         print("isInstance str", ba, type(ba))
+#     return '0x' + ''.join(format(x, '02x') for x in ba)
+
 def bytearray_to_hex(ba):
+    print('ba: ', ba, type(ba))
+    # Extract the bytearray part from the tuple
+    if isinstance(ba, tuple) and isinstance(ba[0], bytearray):
+        ba = ba[0]  # Get the bytearray from the tuple
+    elif isinstance(ba, tuple) and isinstance(ba[0], str):
+        ba = bytearray.fromhex(ba[0][2:])  # Exclude the '0x'
+    elif isinstance(ba, str):
+        ba = bytearray.fromhex(ba[2:])  # Exclude the '0x'
+
+    print("final ba: ", ba, type(ba))
     return '0x' + ''.join(format(x, '02x') for x in ba)
+
+
 
 
 def hex_to_bytearray(hex_string):

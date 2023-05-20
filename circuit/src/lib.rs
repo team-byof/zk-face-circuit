@@ -80,19 +80,23 @@ impl FacialRecoverConfig {
             .recover_and_hash(ctx, poseidon, features, errors, commitment)?;
         let mut message_ext = message.to_vec();
         message_ext.append(&mut vec![0; self.max_msg_size - message.len()]);
-
+        println!("message_ext: {:?}", message_ext);
         let gate = self.gate();
+        println!("gate: {:?}", gate);
         let assigned_message = message_ext
             .into_iter()
             .map(|val| gate.load_witness(ctx, Value::known(Fr::from(val as u64))))
             .collect_vec();
+        println!("assigned_message: {:?}", assigned_message);
         let hash_input = vec![fuzzy_result.assigned_word, assigned_message.clone()].concat();
+        println!("hash_input: {:?}", hash_input);
         let assigned_message_hash = poseidon.hash_elements(ctx, &gate, &hash_input)?.0[0].clone();
+        println!("assigned_message_hash: {:?}", assigned_message_hash);
         let assigned_commitment_hash = poseidon
             .hash_elements(ctx, &gate, &fuzzy_result.assigned_commitment)?
             .0[0]
             .clone();
-
+        println!("assigned_commitment_hash: {:?}", assigned_commitment_hash);
         Ok(FacialRecoverResult {
             assigned_commitment: fuzzy_result.assigned_commitment,
             assigned_feature_hash: fuzzy_result.assigned_feature_hash,
@@ -216,6 +220,7 @@ impl Circuit<Fr> for DefaultFacialRecoverCircuit {
                     &self.commitment,
                     &self.message,
                 )?;
+                println!("result: {:?}", result);
                 let gate = config.inner.gate();
                 let packed_msg = result
                     .assigned_message
@@ -233,6 +238,7 @@ impl Circuit<Fr> for DefaultFacialRecoverCircuit {
                         sum
                     })
                     .collect_vec();
+                println!("packed_msg: {:?}", packed_msg);
                 debug_assert_eq!(16 * packed_msg.len(), result.assigned_message.len());
                 config.inner.finalize(ctx);
                 instance_cell.push(result.assigned_commitment_hash.cell());
@@ -243,9 +249,9 @@ impl Circuit<Fr> for DefaultFacialRecoverCircuit {
                 Ok(())
             },
         )?;
-        for (idx, cell) in instance_cell.into_iter().enumerate() {
-            layouter.constrain_instance(cell, config.instance, idx)?;
-        }
+        // for (idx, cell) in instance_cell.into_iter().enumerate() {
+        //     layouter.constrain_instance(cell, config.instance, idx)?;
+        // }
         Ok(())
     }
 }

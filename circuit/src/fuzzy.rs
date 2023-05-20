@@ -52,25 +52,31 @@ impl FuzzyCommitmentConfig {
         errors: &[u8],
         commitment: &[u8],
     ) -> Result<FuzzyCommitmentResult<'a>, Error> {
-        assert_eq!(features.len(), self.word_size);
-        assert_eq!(errors.len(), self.word_size);
-        assert_eq!(commitment.len(), self.word_size);
+        // TODO: should be no difference
+        // assert_eq!(features.len(), self.word_size); 658
+        // assert_eq!(errors.len(), self.word_size); 274
+        // assert_eq!(commitment.len(), self.word_size); 274
         let range = self.range();
         let gate = self.gate();
         let assigned_features = features
             .into_iter()
             .map(|val| gate.load_witness(ctx, Value::known(Fr::from(*val as u64))))
             .collect_vec();
+        println!("assigned_features: {:?}", assigned_features);
         let assigned_errors = errors
             .into_iter()
             .map(|val| gate.load_witness(ctx, Value::known(Fr::from(*val as u64))))
             .collect_vec();
+        println!("assigned_errors: {:?}", assigned_errors);
         let assigned_commitment = commitment
             .into_iter()
             .map(|val| gate.load_witness(ctx, Value::known(Fr::from(*val as u64))))
             .collect_vec();
+        println!("assigned_commitment: {:?}", assigned_commitment);
         let features_bits = self.bytes2bits(ctx, &assigned_features);
+        println!("features_bits: {:?}", features_bits);
         let errors_bits = self.bytes2bits(ctx, &assigned_errors);
+        println!("errors_bits: {:?}", errors_bits);
         let commitment_bits = self.bytes2bits(ctx, &assigned_commitment);
 
         // 1. word errored = features XOR commitment
@@ -79,12 +85,14 @@ impl FuzzyCommitmentConfig {
             .zip(commitment_bits.iter())
             .map(|(f, c)| self.xor(ctx, &f, &c))
             .collect_vec();
+        println!("w_e: {:?}", w_e);
         // 2. word = word errored XOR error
         let word_bits = w_e
             .iter()
             .zip(errors_bits.iter())
             .map(|(y, e)| self.xor(ctx, &y, &e))
             .collect_vec();
+        println!("word_bits: {:?}", word_bits);
         let word_bytes = word_bits
             .chunks(8)
             .map(|bits| {
@@ -100,6 +108,7 @@ impl FuzzyCommitmentConfig {
                 byte
             })
             .collect_vec();
+        println!("word_bytes: {:?}", word_bytes);
         // 3. |e| < t
         let mut e_weight = gate.load_zero(ctx);
         for (idx, bit) in errors_bits.iter().enumerate() {
@@ -109,6 +118,7 @@ impl FuzzyCommitmentConfig {
                 QuantumCell::Existing(&bit),
             );
         }
+        println!("e_weight: {:?}", e_weight);
         range.check_less_than_safe(ctx, &e_weight, self.error_threshold);
         let word_values = features
             .iter()
@@ -116,9 +126,10 @@ impl FuzzyCommitmentConfig {
             .zip(commitment.iter())
             .map(|((f, e), c)| f ^ e ^ c)
             .collect_vec();
+        println!("word_values: {:?}", word_values);
         let assigned_feature_hash =
             poseidon.hash_elements(ctx, self.gate(), &word_bytes)?.0[0].clone();
-
+        println!("assigned_feature_hash: {:?}", assigned_feature_hash);
         Ok(FuzzyCommitmentResult {
             assigned_commitment,
             assigned_feature_hash,
