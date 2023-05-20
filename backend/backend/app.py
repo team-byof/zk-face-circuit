@@ -2,12 +2,16 @@ import os
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+
+from backend.backend.account_abstraction import EntryPointContract, ALLTHATNODE_URL, CONTRACT_ABI, ENTRY_POINT_ADDRESS, \
+    PRIVATE_KEY
 from ml_model import FaceComparison
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 face_comparator = FaceComparison()
+entry_point_contract = EntryPointContract(ALLTHATNODE_URL, PRIVATE_KEY, CONTRACT_ABI, ENTRY_POINT_ADDRESS)
 
 
 @app.route('/api/data')
@@ -111,6 +115,7 @@ def gen_proof():
     try:
         # result = FaceComparison.gen_proof(filename, json_data)
         result = FaceComparison.gen_proof(json_data)
+        entry_point_contract.create_account(result.get('recovered_hash_ecc'), result.get('hash_ecc_msg'), result.get('proof'))
     except ValueError as e:
         # Remove the temporary image file
         # os.remove(filename)

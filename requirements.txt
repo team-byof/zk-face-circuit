@@ -14,3 +14,6 @@ maturin==0.14.17
 autopep8==2.0.2
 Pillow==9.5.0
 web3==6.4.0
+Werkzeug~=2.3.4
+bridge~=0.1.0
+hexbytes~=0.3.0
