@@ -11,9 +11,9 @@ maturin develop
 ```
 * Export the Halo2 circuit to Solidity Verifier
   * You need to run the command below from the root directory of this repository.
-  * Please make sure that you have
 ```
 cargo run gen-params --k 20
 cargo run gen-keys
+# or directly download the binaries by ./halo2-binary.sh
 cargo run gen-evm-verifier
 ```
